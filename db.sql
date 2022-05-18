@@ -46,3 +46,52 @@ WHERE id = 7;
 
 --Delete query
 DELETE FROM restaurants where id = 8;
+
+-- Review table
+CREATE TABLE reviews (
+    id BIGSERIAL NOT NULL PRIMARY KEY,
+    restaurant_id BIGINT NOT NULL REFERENCES restaurants(id) ON DELETE CASCADE,
+    name VARCHAR(50) NOT NULL,
+    review TEXT,  --unlimited character
+    rating INT NOT NULL check(rating >=1 and rating <= 5)
+);
+
+--aggregate functions
+
+--Count
+SELECT COUNT(*) from reviews;
+
+--Min
+SELECT MIN(rating) from reviews;
+
+--Max
+SELECT MAX(rating) from reviews;
+
+--AVG
+SELECT trunc(AVG(rating), 2) AS average_review from reviews;
+
+SELECT trunc(AVG(rating),2) AS average_rating from reviews where restaurant_id = 1;
+
+SELECT * from reviews;
+
+SELECT restaurant_id, count(restaurant_id) from reviews group by restaurant_id;
+
+-- inner join
+SELECT * from restaurants inner join reviews on restaurant_id = reviews.restaurant_id;
+
+-- Left join
+SELECT * from restaurants left join reviews on restaurant_id = reviews.restaurant_id;
+
+-- Query for joining review and avg rating
+SELECT * from restaurants left join (SELECT restaurant_id, count(*), trunc(avg(rating), 1) as average_rating from reviews group by restaurant_id) reviews on id = reviews.restaurant_id;
+
+-- For one restaurant
+
+SELECT * from restaurants left join (SELECT restaurant_id, count(*), trunc(avg(rating), 1) as average_rating from reviews group by restaurant_id) reviews on id = reviews.restaurant_id where id = $1;
+
+--Alter table
+ALTER TABLE reviews
+DROP CONSTRAINT "reviews_restaurant_id_fkey"; 
+
+ALTER TABLE reivews
+ADD CONSTRAINT "reviews_restaurant_id_fkey" FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE;
